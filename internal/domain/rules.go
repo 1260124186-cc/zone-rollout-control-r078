@@ -74,35 +74,24 @@ func EnsureObservationCounts(state *State) {
 	}
 }
 
-func observationCountsByPlan(state *State) map[string]uint64 {
-	counts := make(map[string]uint64, len(state.Plans))
-	for _, probe := range state.Probes {
-		if probe.PlanID == "" {
-			continue
-		}
-		counts[probe.PlanID]++
-	}
-	return counts
-}
-
-func highestObservationCount(counts map[string]uint64) uint64 {
-	highest := uint64(0)
-	for _, value := range counts {
-		if value > highest {
-			highest = value
-		}
-	}
-	return highest
-}
-
 func RebuildObservationCounts(state *State) {
 	if state == nil {
 		return
 	}
-	shared := highestObservationCount(observationCountsByPlan(state))
+	// 每个计划的观测计数只来自它自己名下的探针，互不影响；
+	// 没有探针的计划计数为 0。
 	rebuilt := make(map[string]uint64, len(state.Plans))
 	for planID := range state.Plans {
-		rebuilt[planID] = shared
+		rebuilt[planID] = 0
+	}
+	for _, probe := range state.Probes {
+		if probe.PlanID == "" {
+			continue
+		}
+		if _, ok := rebuilt[probe.PlanID]; !ok {
+			continue
+		}
+		rebuilt[probe.PlanID]++
 	}
 	state.ObservationCounts = rebuilt
 }
