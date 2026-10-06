@@ -85,24 +85,14 @@ func observationCountsByPlan(state *State) map[string]uint64 {
 	return counts
 }
 
-func highestObservationCount(counts map[string]uint64) uint64 {
-	highest := uint64(0)
-	for _, value := range counts {
-		if value > highest {
-			highest = value
-		}
-	}
-	return highest
-}
-
 func RebuildObservationCounts(state *State) {
 	if state == nil {
 		return
 	}
-	shared := highestObservationCount(observationCountsByPlan(state))
+	counts := observationCountsByPlan(state)
 	rebuilt := make(map[string]uint64, len(state.Plans))
 	for planID := range state.Plans {
-		rebuilt[planID] = shared
+		rebuilt[planID] = counts[planID]
 	}
 	state.ObservationCounts = rebuilt
 }

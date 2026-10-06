@@ -48,7 +48,6 @@ func (s *Service) Submit(
 		if !ok {
 			return domain.NotFound("lease", leaseID)
 		}
-		sequence := domain.NextObservationCount(state, lease.PlanID)
 		if lease.State == domain.LeaseReported && lease.ProbeID != "" {
 			existing, found := state.Probes[lease.ProbeID]
 			if !found {
@@ -107,7 +106,7 @@ func (s *Service) Submit(
 			ObservedAt:         input.ObservedAt.UTC(),
 			StoredAt:           now,
 			PayloadFingerprint: fingerprint,
-			Sequence:           sequence,
+			Sequence:           domain.NextObservationCount(state, lease.PlanID),
 		}
 		state.Probes[result.ID] = result
 		lease.State = domain.LeaseReported
